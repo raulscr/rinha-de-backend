@@ -1,4 +1,4 @@
-package com.example.KotlinRinhaBackend
+package com.rinha.backend.KotlinRinhaBackend
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication

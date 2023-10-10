@@ -18,4 +18,22 @@ class MockPersonDataSource : PersonDataSourceInterface {
     override fun getPersonById(id: String): Collection<PersonModel> {
         return dataModel.filter { id == it.id }
     }
+
+    override fun getPersonByFilter(filter: String): Collection<PersonModel> {
+        return dataModel.filter {
+            filter == it.name ||
+                    filter == it.nickname ||
+                    filter == it.bornDate ||
+                    it.stack.contains(filter)
+        }
+    }
+
+    override fun insertPerson(people: Collection<PersonModel>) {
+        dataModel.addAll(people.toMutableList())
+        return
+    }
+
+    override fun getCountPeople(): Int {
+        return dataModel.count()
+    }
 }

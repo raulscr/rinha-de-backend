@@ -1,4 +1,4 @@
-package com.rinha.backend.KotlinRinhaBackend
+package com.rinha.backend.KotlinRinhaBackend.model
 
 data class PersonModel (
     val id: String

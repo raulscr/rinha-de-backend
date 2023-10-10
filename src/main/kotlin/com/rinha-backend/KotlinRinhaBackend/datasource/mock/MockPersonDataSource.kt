@@ -16,11 +16,6 @@ class MockPersonDataSource : PersonDataSourceInterface {
             )
 
     override fun getPersonById(id: String): Collection<PersonModel> {
-        return listOf(
-                PersonModel("1", "p1", "nick1", "04/08/2002", listOf("C++")),
-                PersonModel("2", "p2", "nick2", "04/08/2002", listOf("C++")),
-                PersonModel("3", "p3", "nick2", "04/08/2002", listOf("C++")),
-                PersonModel("4", "p4", "nick2", "04/08/2002", listOf("C++"))
-        )
+        return dataModel.filter { id == it.id }
     }
 }

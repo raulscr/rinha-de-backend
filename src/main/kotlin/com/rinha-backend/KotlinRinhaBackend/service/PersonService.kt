@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class PersonService(private val dataSource: PersonDataSourceInterface) {
-    fun getPersonById(id: String): Collection<PersonModel> {
+    fun getPersonById(id: String): PersonModel {
         return dataSource.getPersonById(id)
     }
 

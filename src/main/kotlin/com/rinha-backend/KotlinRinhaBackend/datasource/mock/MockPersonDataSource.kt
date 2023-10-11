@@ -15,8 +15,8 @@ class MockPersonDataSource : PersonDataSourceInterface {
                     PersonModel("4", "p4", "nick2", "04/08/2002", listOf("C++"))
             )
 
-    override fun getPersonById(id: String): Collection<PersonModel> {
-        return dataModel.filter { id == it.id }
+    override fun getPersonById(id: String): PersonModel {
+        return dataModel.first(predicate = { id == it.id })
     }
 
     override fun getPersonByFilter(filter: String): Collection<PersonModel> {

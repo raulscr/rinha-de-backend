@@ -4,7 +4,7 @@ import com.rinha.backend.KotlinRinhaBackend.datasource.PersonDataSourceInterface
 import com.rinha.backend.KotlinRinhaBackend.model.PersonModel
 import org.springframework.stereotype.Repository
 
-@Repository
+@Repository("mock")
 class MockPersonDataSource : PersonDataSourceInterface {
 
     private val dataModel: MutableCollection<PersonModel> =
@@ -15,21 +15,21 @@ class MockPersonDataSource : PersonDataSourceInterface {
             PersonModel(4, "p4", "nick2", "04/08/2002", listOf("C++"))
         )
 
-    override fun getPersonById(id: Long): PersonModel {
+    override fun getPersonById(id: Long): PersonModel? {
         return dataModel.first(predicate = { id == it.id })
     }
 
     override fun getPersonByFilter(filter: String): Collection<PersonModel> {
         return dataModel.filter {
             filter == it.name ||
-                    filter == it.nickname ||
+                    filter == it.nickName ||
                     filter == it.bornDate ||
-                    it.stack.contains(filter)
+                    (it.stack != null && it.stack.contains(filter))
         }
     }
 
-    override fun insertPerson(people: Collection<PersonModel>) {
-        dataModel.addAll(people.toMutableList())
+    override fun insertPerson(person: PersonModel) {
+        dataModel.add(person)
         return
     }
 

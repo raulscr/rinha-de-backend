@@ -8,14 +8,14 @@ import org.springframework.stereotype.Repository
 class MockPersonDataSource : PersonDataSourceInterface {
 
     private val dataModel: MutableCollection<PersonModel> =
-            mutableListOf(
-                    PersonModel("1", "p1", "nick1", "04/08/2002", listOf("C++")),
-                    PersonModel("2", "p2", "nick2", "04/08/2002", listOf("C++")),
-                    PersonModel("3", "p3", "nick2", "04/08/2002", listOf("C++")),
-                    PersonModel("4", "p4", "nick2", "04/08/2002", listOf("C++"))
-            )
+        mutableListOf(
+            PersonModel(1, "p1", "nick1", "04/08/2002", listOf("C++")),
+            PersonModel(2, "p2", "nick2", "04/08/2002", listOf("C++")),
+            PersonModel(3, "p3", "nick2", "04/08/2002", listOf("C++")),
+            PersonModel(4, "p4", "nick2", "04/08/2002", listOf("C++"))
+        )
 
-    override fun getPersonById(id: String): PersonModel {
+    override fun getPersonById(id: Long): PersonModel {
         return dataModel.first(predicate = { id == it.id })
     }
 

@@ -2,10 +2,11 @@ package com.rinha.backend.KotlinRinhaBackend.service
 
 import com.rinha.backend.KotlinRinhaBackend.datasource.PersonDataSourceInterface
 import com.rinha.backend.KotlinRinhaBackend.model.PersonModel
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 
 @Service
-class PersonService(private val dataSource: PersonDataSourceInterface) {
+class PersonService(@Qualifier("repository") private val dataSource: PersonDataSourceInterface) {
     fun getPersonById(id: Long): PersonModel? {
         return dataSource.getPersonById(id)
     }

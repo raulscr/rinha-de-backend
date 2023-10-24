@@ -1,7 +1,6 @@
 package com.rinha.backend.KotlinRinhaBackend.datasource.repository
 
 import com.rinha.backend.KotlinRinhaBackend.datasource.PersonDataSourceInterface
-import com.rinha.backend.KotlinRinhaBackend.datasource.repository.rowmapper.PersonModelRowMapper
 import com.rinha.backend.KotlinRinhaBackend.model.PersonModel
 import org.springframework.data.repository.query.Param
 import org.springframework.jdbc.core.BatchPreparedStatementSetter
@@ -15,19 +14,40 @@ import java.sql.ResultSet
 class PersonRepository(private val jdbcTemplate: JdbcTemplate) : PersonDataSourceInterface {
 
     override fun getPersonById(@Param("id") id: Long): PersonModel? {
-        val sqlQuery: String = """
+        val stackQuery: String = """
             SELECT
-                p.id,
-                p.name,
-                p.nick_name,
-                p.born_date
+                s.stack AS stack
+            FROM
+                person_stack s
+            WHERE (
+                s.person_id = ?
+            );
+        """
+        val stack: Collection<String> = jdbcTemplate.query(stackQuery, RowMapper<String> { rs: ResultSet, _: Int ->
+            rs.getString("stack")
+        }, id);
+
+        val personQuery: String = """
+            SELECT
+                p.id AS id,
+                p.name AS name,
+                p.nick_name AS nick_name,
+                p.born_date AS born_date
             FROM
                 person p
             WHERE (
                 p.id = ?
             );
         """
-        return jdbcTemplate.query(sqlQuery, personRowMapper, id).firstOrNull();
+        return jdbcTemplate.query(personQuery, RowMapper<PersonModel> { rs: ResultSet, _: Int ->
+            PersonModel(
+                id = rs.getLong("id"),
+                name = rs.getString("name"),
+                nickName = rs.getString("nick_name"),
+                bornDate = rs.getString("born_date"),
+                stack = stack
+            )
+        }, id).firstOrNull();
     }
 
     override fun getPersonByFilter(filter: String): Collection<PersonModel> {
@@ -89,7 +109,5 @@ class PersonRepository(private val jdbcTemplate: JdbcTemplate) : PersonDataSourc
             rs.getInt("count")
         }).first()
     }
-
-    private val personRowMapper: PersonModelRowMapper = PersonModelRowMapper()
 
 }

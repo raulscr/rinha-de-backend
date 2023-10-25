@@ -5,7 +5,10 @@ import com.rinha.backend.KotlinRinhaBackend.model.PersonModel
 import org.springframework.data.repository.query.Param
 import org.springframework.jdbc.core.BatchPreparedStatementSetter
 import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.jdbc.core.ResultSetExtractor
 import org.springframework.jdbc.core.RowMapper
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
 import java.sql.PreparedStatement
 import java.sql.ResultSet
@@ -108,6 +111,38 @@ class PersonRepository(private val jdbcTemplate: JdbcTemplate) : PersonDataSourc
         return jdbcTemplate.query(sqlQuery, RowMapper<Int> { rs: ResultSet, _: Int ->
             rs.getInt("count")
         }).first()
+    }
+
+// private
+
+    private fun getPersonStackById(ids: List<Long>): Map<Long, List<String>> {
+        val stackQuery: String =
+            """
+            SELECT
+                s.person_id AS id,
+                s.stack AS stack
+            FROM
+                person_stack s
+            WHERE (
+                s.person_id IN (:ids)
+            );
+        """
+        return NamedParameterJdbcTemplate(jdbcTemplate)
+            .query(
+                stackQuery,
+                MapSqlParameterSource().addValue("ids", ids),
+                ResultSetExtractor<Map<Long, List<String>>> { rs: ResultSet ->
+                    val stacksById: MutableMap<Long, MutableList<String>> = mutableMapOf()
+                    while (rs.next()) {
+                        val id: Long = rs.getLong("id")
+                        val stack: String = rs.getString("stack")
+                        if (!stacksById.containsKey(id)) {
+                            stacksById[id] = mutableListOf()
+                        }
+                        stacksById[id]?.add(stack)
+                    }
+                    stacksById
+                }) ?: mapOf()
     }
 
 }

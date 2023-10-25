@@ -17,18 +17,7 @@ import java.sql.ResultSet
 class PersonRepository(private val jdbcTemplate: JdbcTemplate) : PersonDataSourceInterface {
 
     override fun getPersonById(@Param("id") id: Long): PersonModel? {
-        val stackQuery: String = """
-            SELECT
-                s.stack AS stack
-            FROM
-                person_stack s
-            WHERE (
-                s.person_id = ?
-            );
-        """
-        val stack: Collection<String> = jdbcTemplate.query(stackQuery, RowMapper<String> { rs: ResultSet, _: Int ->
-            rs.getString("stack")
-        }, id);
+        val stack: List<String> = getPersonStackById(listOf(id))[id].orEmpty()
 
         val personQuery: String = """
             SELECT

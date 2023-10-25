@@ -17,7 +17,7 @@ import java.sql.ResultSet
 class PersonRepository(private val jdbcTemplate: JdbcTemplate) : PersonDataSourceInterface {
 
     override fun getPersonById(@Param("id") id: Long): PersonModel? {
-        val stack: List<String> = getPersonStackById(listOf(id))[id].orEmpty()
+        val stack: List<String> = getPersonStack(listOf(id))[id].orEmpty()
 
         val personQuery: String = """
             SELECT
@@ -104,7 +104,16 @@ class PersonRepository(private val jdbcTemplate: JdbcTemplate) : PersonDataSourc
 
 // private
 
-    private fun getPersonStackById(ids: List<Long>): Map<Long, List<String>> {
+    private fun getPersonStack(ids: List<Long>?, stacks: List<String>? = null): Map<Long, List<String>> {
+
+        val clauses = mutableListOf<String>(
+            if (ids.isNullOrEmpty()) "" else "s.person_id IN (:ids)",
+            if (stacks.isNullOrEmpty()) "" else "s.stack IN (:stacks)"
+        )
+        clauses.remove("")
+
+        val clause: String = clauses.joinToString(" OR ").trim().ifEmpty { "TRUE" }
+
         val stackQuery: String =
             """
             SELECT
@@ -113,13 +122,15 @@ class PersonRepository(private val jdbcTemplate: JdbcTemplate) : PersonDataSourc
             FROM
                 person_stack s
             WHERE (
-                s.person_id IN (:ids)
+                $clause
             );
         """
         return NamedParameterJdbcTemplate(jdbcTemplate)
             .query(
                 stackQuery,
-                MapSqlParameterSource().addValue("ids", ids),
+                MapSqlParameterSource()
+                    .addValue("ids", ids)
+                    .addValue("stacks", stacks),
                 ResultSetExtractor<Map<Long, List<String>>> { rs: ResultSet ->
                     val stacksById: MutableMap<Long, MutableList<String>> = mutableMapOf()
                     while (rs.next()) {

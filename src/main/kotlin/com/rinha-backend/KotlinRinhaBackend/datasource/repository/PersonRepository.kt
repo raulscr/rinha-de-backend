@@ -103,16 +103,7 @@ class PersonRepository(private val jdbcTemplate: JdbcTemplate) : PersonDataSourc
 
 // private
 
-    private fun getPersonStack(ids: List<Long>?, stacks: List<String>? = null): Map<Long, List<String>> {
-
-        val clauses = mutableListOf<String>(
-            if (ids.isNullOrEmpty()) "" else "s.person_id IN (:ids)",
-            if (stacks.isNullOrEmpty()) "" else "s.stack IN (:stacks)"
-        )
-        clauses.remove("")
-
-        val clause: String = clauses.joinToString(" OR ").trim().ifEmpty { "TRUE" }
-
+    private fun getPersonStack(clause: String, paramMapper: MapSqlParameterSource): Map<Long, List<String>> {
         val stackQuery: String =
             """
             SELECT
@@ -127,9 +118,7 @@ class PersonRepository(private val jdbcTemplate: JdbcTemplate) : PersonDataSourc
         return NamedParameterJdbcTemplate(jdbcTemplate)
             .query(
                 stackQuery,
-                MapSqlParameterSource()
-                    .addValue("ids", ids)
-                    .addValue("stacks", stacks),
+                paramMapper,
                 ResultSetExtractor<Map<Long, List<String>>> { rs: ResultSet ->
                     val stacksById: MutableMap<Long, MutableList<String>> = mutableMapOf()
                     while (rs.next()) {

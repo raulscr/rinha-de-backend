@@ -107,7 +107,15 @@ class PersonRepository(private val jdbcTemplate: JdbcTemplate) : PersonDataSourc
 
 // private
 
-    private fun getPersonStack(clause: String, paramMapper: MapSqlParameterSource): Map<Long, List<String>> {
+    /**
+     * @brief make a simple query on person_stack
+     * @param clause query conditions (will be placed at WHERE $clause)
+     * @param paramMapper mapper to bind the named params on clause to the effective values
+     */
+    private fun getPersonStack(
+        clause: String,
+        paramMapper: MapSqlParameterSource? = MapSqlParameterSource()
+    ): Map<Long, List<String>> {
         val stackQuery: String =
             """
             SELECT

@@ -16,7 +16,11 @@ import java.sql.ResultSet
 class PersonRepository(private val jdbcTemplate: JdbcTemplate) : PersonDataSourceInterface {
 
     override fun getPersonById(id: Long): PersonModel? {
-        val stack: List<String> = getPersonStack(listOf(id))[id].orEmpty()
+        val stack: List<String> = getPersonStack(
+            "person_id = :id",
+            MapSqlParameterSource()
+                .addValue("id", id)
+        )[id].orEmpty()
 
         val personQuery: String = """
             SELECT

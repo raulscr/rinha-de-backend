@@ -2,7 +2,6 @@ package com.rinha.backend.KotlinRinhaBackend.datasource.repository
 
 import com.rinha.backend.KotlinRinhaBackend.datasource.PersonDataSourceInterface
 import com.rinha.backend.KotlinRinhaBackend.model.PersonModel
-import org.springframework.data.repository.query.Param
 import org.springframework.jdbc.core.BatchPreparedStatementSetter
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.ResultSetExtractor
@@ -16,7 +15,7 @@ import java.sql.ResultSet
 @Repository("repository")
 class PersonRepository(private val jdbcTemplate: JdbcTemplate) : PersonDataSourceInterface {
 
-    override fun getPersonById(@Param("id") id: Long): PersonModel? {
+    override fun getPersonById(id: Long): PersonModel? {
         val stack: List<String> = getPersonStack(listOf(id))[id].orEmpty()
 
         val personQuery: String = """

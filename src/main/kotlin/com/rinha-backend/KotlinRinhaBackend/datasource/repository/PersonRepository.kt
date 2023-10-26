@@ -46,7 +46,65 @@ class PersonRepository(private val jdbcTemplate: JdbcTemplate) : PersonDataSourc
     }
 
     override fun getPersonByFilter(filter: String): Collection<PersonModel> {
-        TODO("NOT IMPLEMENTED")
+        // make a query searching rows that only stack match with filter
+        var stacksByPerson: Map<Long, List<String>> = getPersonStack(
+            "stack = :filter",
+            MapSqlParameterSource()
+                .addValue("filter", filter)
+        )
+
+        if (stacksByPerson.isNotEmpty()) {
+            // make another query, searching by all stacks for that person id
+            // (It'll return the same set from the previous query, plus the other person stacks set)
+            stacksByPerson = getPersonStack(
+                "person_id IN (:ids)",
+                MapSqlParameterSource()
+                    .addValue("ids", stacksByPerson.keys)
+            )
+        }
+
+        val clauses = mutableListOf<String>(
+            if (stacksByPerson.isEmpty()) "" else "p.id IN (:ids)",
+            "p.nick_name = :filter",
+            "p.name = :filter"
+        )
+        clauses.remove("")
+        val clause: String = clauses.joinToString(" OR ")
+
+        val personQuery: String = """
+            SELECT
+                p.id AS id,
+                p.name AS name,
+                p.nick_name AS nick_name,
+                p.born_date AS born_date
+            FROM
+                person p
+            WHERE (
+                $clause
+            );
+        """
+        return NamedParameterJdbcTemplate(jdbcTemplate)
+            .query(
+                personQuery,
+                MapSqlParameterSource()
+                    .addValue("ids", stacksByPerson.keys)
+                    .addValue("filter", filter),
+                ResultSetExtractor<Collection<PersonModel>> { rs: ResultSet ->
+                    val people: MutableList<PersonModel> = mutableListOf()
+                    while (rs.next()) {
+                        val id: Long = rs.getLong("id")
+                        people.add(
+                            PersonModel(
+                                id = id,
+                                name = rs.getString("name"),
+                                nickName = rs.getString("nick_name"),
+                                bornDate = rs.getString("born_date"),
+                                stack = stacksByPerson[id]
+                            )
+                        )
+                    }
+                    people
+                }) ?: listOf()
     }
 
     override fun insertPerson(person: PersonModel) {

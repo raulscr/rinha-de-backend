@@ -1,0 +1,15 @@
+server:
+  port: 9999
+spring:
+  datasource:
+    url: ${POSTGRESQL_ADDRESS:jdbc:postgresql://localhost:5432/rinha}
+    username: ${POSTGRESQL_USERNAME:postgres}
+    password: ${POSTGRESQL_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+  flyway:
+    enabled: true
+    locations: db/migration
+    baselineOnMigrate: true
+  jpa:
+    show-sql: true
+    generate-ddl: true

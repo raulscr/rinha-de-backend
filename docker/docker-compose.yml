@@ -1,21 +1,57 @@
-version: '3.0'
-
+version: '3.8'
 services:
-  database:
-    restart: always
-    build: rinha-database/
-    command: --lower_case_table_names=1
-    volumes:
-      - db_data:/var/lib/mysql
-    environment:
-      MYSQL_ROOT_PASSWORD: "123456"
+  rinha:
+    image: rinha:1.0
+    hostname: rinha
+    depends_on:
+      db:
+        condition: service_healthy
     healthcheck:
-      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
-      timeout: 20s
+      test: [ "CMD-SHELL", "curl 127.0.0.1:9999" ]
+      interval: 3s
+      timeout: 5s
+      retries: 10
+    deploy:
+      resources:
+        limits:
+          cpus: '0.7'
+          memory: '2.0GB'
+    environment:
+      POSTGRESQL_ADDRESS: jdbc:postgresql://db:5432/rinha
+      POSTGRESQL_USERNAME: postgres
+      POSTGRESQL_PASSWORD: postgres
+      WEBSERVER_PORT: 9999
+      JAVA_TOOL_OPTIONS: "-verbose:gc -Xmx1792M -Xms1792M -XX:+UnlockExperimentalVMOptions -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:+AlwaysPreTouch -XX:+ExitOnOutOfMemoryError"
     ports:
-      - "3306:3306"
-    expose:
-      - "3306"
+      - "9999:9999"
+    networks:
+      - rinha-network
+  db:
+    image: postgres
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: '0.5GB'
+    environment:
+      PGUSER: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: rinha
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 3s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - type: bind
+        source: init.sh
+        target: /docker-entrypoint-initdb.d/init-extension.sh
+    command: "postgres -c max_connections=200 -c shared_buffers=512MB -c effective_cache_size=1536MB -c maintenance_work_mem=128MB -c checkpoint_completion_target=0.9 -c wal_buffers=16MB -c default_statistics_target=100 -c random_page_cost=1.1 -c effective_io_concurrency=200 -c work_mem=1310kB -c huge_pages=off -c min_wal_size=1GB -c max_wal_size=4GB"
+    networks:
+      - rinha-network
 
-volumes:
-  db_data:
+networks:
+  rinha-network:

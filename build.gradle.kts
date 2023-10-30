@@ -3,8 +3,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     id("org.springframework.boot") version "3.1.4"
     id("io.spring.dependency-management") version "1.1.3"
-    kotlin("jvm") version "1.8.22"
-    kotlin("plugin.spring") version "1.8.22"
+    kotlin("jvm") version "1.9.10"
+    kotlin("plugin.spring") version "1.9.10"
 }
 
 group = "com.rinha.backend"
@@ -20,15 +20,13 @@ repositories {
 }
 
 dependencies {
-    implementation("mysql:mysql-connector-java:8.0.28")
-    implementation("org.flywaydb:flyway-core")
-    implementation("org.flywaydb:flyway-mysql")
     implementation("org.springframework.boot:spring-boot-starter")
-    implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
+    implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    implementation("org.springframework.boot:spring-boot-starter-webflux")
-    implementation("org.jetbrains.kotlin:kotlin-reflect")
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    implementation("org.postgresql:postgresql")
+    implementation("org.flywaydb:flyway-core:9.22.3")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
+    runtimeOnly("org.jetbrains.kotlin:kotlin-reflect")
 }
 
 tasks.withType<KotlinCompile>().all {
@@ -40,3 +38,10 @@ tasks.withType<KotlinCompile>().all {
 tasks.withType<Test> {
     useJUnitPlatform()
 }
+
+buildscript {
+    dependencies {
+        classpath("org.jetbrains.kotlin:kotlin-noarg:1.9.10")
+    }
+}
+apply(plugin = "kotlin-jpa")
